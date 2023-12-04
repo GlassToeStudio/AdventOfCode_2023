@@ -131,7 +131,6 @@ def format_instruction_text(html_text: str) -> str:
         regex = re.compile(regex_str)
         matches = regex.findall(html_text)
         title = matches[0][1]
-        print(title)
         for match in matches:
             html_text = html_text.replace(match[0], f"\n\n--- {match[1]} ---\n")
 
