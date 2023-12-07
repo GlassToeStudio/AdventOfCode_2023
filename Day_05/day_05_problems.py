@@ -250,12 +250,12 @@ def src_to_dest_rng(initial, map):
 
 
 def part_1(data):
-    ans = float("inf")
+    ans = []
     for src in data[KEYS[0]]:
         for i in range(1, len(KEYS)):
             src = src_to_dest(src, data[KEYS[i]])
-        ans = min(ans, src)
-    return ans
+        ans.append(src)
+    return min(ans)
 
 
 def part_2(data):
