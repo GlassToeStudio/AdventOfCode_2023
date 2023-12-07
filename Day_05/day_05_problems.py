@@ -229,32 +229,24 @@ def src_to_dest(initial, map):
     return initial
 
 
-def seed_to_soil(seed, maps):
-    return src_to_dest(seed, maps)
-
-
-def soil_to_fertilizer(soil, maps):
-    return src_to_dest(soil, maps)
-
-
-def fertilizer_to_water(fertilizer, maps):
-    return src_to_dest(fertilizer, maps)
-
-
-def water_to_light(water, maps):
-    return src_to_dest(water, maps)
-
-
-def light_to_temperature(light, maps):
-    return src_to_dest(light, maps)
-
-
-def temperature_to_humidity(temp, maps):
-    return src_to_dest(temp, maps)
-
-
-def humidity_to_location(hum, maps):
-    return src_to_dest(hum, maps)
+def src_to_dest_rng(initial, map):
+    ans = []
+    for dest, src, sz in map:
+        src_end = src + sz
+        working = []
+        while initial:
+            (st, ed) = initial.pop()
+            first = (st, min(ed, src))
+            middle = (max(st, src), min(src_end, ed))
+            last = (max(src_end, st), ed)
+            if first[1] > first[0]:
+                working.append(first)
+            if middle[1] > middle[0]:
+                ans.append((middle[0] - src + dest, middle[1] - src + dest))
+            if last[1] > last[0]:
+                working.append(last)
+        initial = working
+    return ans + initial
 
 
 def part_1(data):
@@ -266,100 +258,13 @@ def part_1(data):
     return ans
 
 
-# def part_1(data):
-#     ans = float("inf")
-#     for seed in data[KEYS[0]]:
-#         soil = seed_to_soil(seed, data[KEYS[1]])
-#         fertilizer = soil_to_fertilizer(soil, data[KEYS[2]])
-#         water = fertilizer_to_water(fertilizer, data[KEYS[3]])
-#         light = water_to_light(water, data[KEYS[4]])
-#         temp = light_to_temperature(light, data[KEYS[5]])
-#         hum = temperature_to_humidity(temp, data[KEYS[6]])
-#         loc = humidity_to_location(hum, data[KEYS[7]])
-#         print(
-#             f"{seed=}, {soil=}, {fertilizer=}, {water=}, {light=}, {temp=}, {hum=}, {loc=}"
-#         )
-#         ans = min(ans, loc)
-#     return ans
-
-
-def test(data):
-    ans = float("inf")
-    for i in range(0, len(data[KEYS[0]]), 2):
-        begin, rng = data[KEYS[0]][i : i + 2]
-        print(begin, rng)
-        for j in range(rng):
-            seed = begin + j
-            soil = seed_to_soil(seed, data[KEYS[1]])
-            fertilizer = soil_to_fertilizer(soil, data[KEYS[2]])
-            water = fertilizer_to_water(fertilizer, data[KEYS[3]])
-            light = water_to_light(water, data[KEYS[4]])
-            temp = light_to_temperature(light, data[KEYS[5]])
-            hum = temperature_to_humidity(temp, data[KEYS[6]])
-            loc = humidity_to_location(hum, data[KEYS[7]])
-            print(
-                f"{seed=}, {soil=}, {fertilizer=}, {water=}, {light=}, {temp=}, {hum=}, {loc=}"
-            )
-            ans = min(ans, loc)
-    return ans
-
-
-def first_and_last(initial_set, map, to_check):
-    #   initial;         span;         end
-    # 4,088,478,806; 114,805,397 = 4,203,284,202 (must subtract 1)
-    #      dest,           src,         rng          src end
-    # [3,333,452,986; 2,926,455,387; 455,063,168] 3,381,518,554
-    #   seeds:
-    #   79 14 55 13
-    #   seed-to-soil map:
-    #   50 98 2
-    #   52 50 48
-
-    begin, span = initial_set
-    end = begin + span - 1
-    for dest, src, rng in map:
-        if begin >= src and begin < src + rng:
-            to_check.append(dest + (begin - src))
-        if end < src + rng:
-            to_check.append(span)
-        if end >= src + rng:
-            to_check.append(end - (src + rng))
-
-        pass
-
-
-def apply_range(R, map):
-    A = []
-    for dest, src, sz in map:
-        src_end = src + sz
-        NR = []
-        while R:
-            # [st                                     ed)
-            #          [src       src_end]
-            # [BEFORE ][INTER            ][AFTER        )
-            (st, ed) = R.pop()
-            # (src,sz) might cut (st,ed)
-            before = (st, min(ed, src))
-            inter = (max(st, src), min(src_end, ed))
-            after = (max(src_end, st), ed)
-            if before[1] > before[0]:
-                NR.append(before)
-            if inter[1] > inter[0]:
-                A.append((inter[0] - src + dest, inter[1] - src + dest))
-            if after[1] > after[0]:
-                NR.append(after)
-        R = NR
-    return A + R
-
-
 def part_2(data):
     ans = []
     for i in range(0, len(data[KEYS[0]]), 2):
         src = data[KEYS[0]][i : i + 2]
         src = [(src[0], src[0] + src[1])]
-        print("src", src)
         for j in range(1, len(data)):
-            src = apply_range(src, data[KEYS[j]])
+            src = src_to_dest_rng(src, data[KEYS[j]])
         ans.append(min(src)[0])
     return min(ans)
 
